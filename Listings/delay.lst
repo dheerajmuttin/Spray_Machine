@@ -1,0 +1,85 @@
+C51 COMPILER V9.60.0.0   DELAY                                                             06/13/2021 00:44:03 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Objects\delay.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Library\StdDriver\src\delay.c LARGE ROM(COMPACT) OPTIMIZE(8,SPEED) BROWS
+                    -E INCDIR(.\Library\Device\Include;.\Library\StdDriver\inc) DEBUG OBJECTEXTEND PRINT(.\Listings\delay.lst) TABS(2) OBJECT
+                    -(.\Objects\delay.obj)
+
+line level    source
+
+   1          /*--------------------------------------------------------------------------------------------------------
+             --*/
+   2          /*                                                                                                        
+             - */
+   3          /* Copyright(c) 2020 nuvoton Technology Corp. All rights reserved.                                        
+             - */
+   4          /*                                                                                                        
+             - */
+   5          /*--------------------------------------------------------------------------------------------------------
+             --*/
+   6          
+   7          //********************************************************************************************************
+             -***
+   8          //  Website: http://www.nuvoton.com
+   9          //  E-Mail : MicroC-8bit@nuvoton.com
+  10          //********************************************************************************************************
+             -***
+  11          
+  12          #include "MS51_32K.h"
+  13          
+  14          /**
+  15            * @brief Timer0 delay setting
+  16            * @param[in] u32SYSCLK define Fsys clock value. for example 24000000, use the real Fsys value.
+  17            *                       - \ref 24000000 (use HIRC 24MHz)
+  18            *                       - \ref 16000000 (use HIRC 16MHz)
+  19            * @param[in] u8CNT define count time.
+  20            * @param[in] u6DLYUnit define delay time base is us. From 1~10000, the maxima value please not over 1000
+             -0.
+  21            *                       - \ref 1000 (1ms)
+  22            *                       - \ref 100 (100us)
+  23            * @return  None
+  24            * @note    If use LIRC or LXT as Fsys need adjust this marco.
+  25            * @exmaple :  Timer0_Delay(16000000,200,1000);
+  26          */
+  27          void Timer0_Delay(unsigned long u32SYSCLK, unsigned int u16CNT, unsigned int u16DLYUnit)
+  28          {
+  29   1            unsigned char TL0TMP, TH0TMP;
+  30   1      
+  31   1            SFRS = 0;
+  32   1            TIMER0_FSYS_DIV12;                                  //T0M=0, Timer0 Clock = Fsys/12
+  33   1            ENABLE_TIMER0_MODE1;                                   //Timer0 is 16-bit mode
+  34   1            TL0TMP = LOBYTE(65535-((u32SYSCLK/1000000)*u16DLYUnit/12));
+  35   1            TH0TMP = HIBYTE(65535-((u32SYSCLK/1000000)*u16DLYUnit/12));
+  36   1        
+  37   1          while (u16CNT != 0)
+  38   1          {
+  39   2            TL0=TL0TMP;
+  40   2            TH0=TH0TMP;
+  41   2            set_TCON_TR0;                                    //Start Timer0
+  42   2            while (!TF0);                       //Check Timer0 Time-Out Flag
+  43   2            clr_TCON_TF0;
+  44   2            clr_TCON_TR0;                       //Stop Timer0
+  45   2            u16CNT --;
+C51 COMPILER V9.60.0.0   DELAY                                                             06/13/2021 00:44:03 PAGE 2   
+
+  46   2          }
+  47   1          
+  48   1            TL0  = 0; 
+  49   1            TH0 = 0;
+  50   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    222    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       9
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

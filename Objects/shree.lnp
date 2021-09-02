@@ -1,0 +1,9 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\PWM.obj",
+".\Objects\delay.obj",
+".\Objects\sys.obj" 
+TO ".\Objects\shree" 
+PRINT(".\Listings\shree.m51") RAMSIZE(256) 
+CODE( 0X0000-0X7FFF )
+XDATA( 0X0000-0X07FF )
