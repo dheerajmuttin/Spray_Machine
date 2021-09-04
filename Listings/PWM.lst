@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   PWM                                                               06/13/2021 00:44:03 PAGE 1   
+C51 COMPILER V9.60.0.0   PWM                                                               09/04/2021 20:40:09 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE PWM
@@ -62,7 +62,7 @@ line level    source
   51   1        DISABLE_GLOBAL_INTERRUPT;
   52   1        Temp = ((float)Periode_Reg_Value * ((float)Duty_Cycle/100));
   53   1        Set_Duty_Cycle = ((unsigned int)Temp);
-C51 COMPILER V9.60.0.0   PWM                                                               06/13/2021 00:44:03 PAGE 2   
+C51 COMPILER V9.60.0.0   PWM                                                               09/04/2021 20:40:09 PAGE 2   
 
   54   1        switch(Channel)
   55   1        {
@@ -126,7 +126,7 @@ line level    source
  113   1        Temp = ((float)Periode_Reg_Value * ((float)Duty_Cycle/100));
  114   1        Set_Duty_Cycle = ((unsigned int)Temp);
  115   1        SFRS = 0;
-C51 COMPILER V9.60.0.0   PWM                                                               06/13/2021 00:44:03 PAGE 3   
+C51 COMPILER V9.60.0.0   PWM                                                               09/04/2021 20:40:09 PAGE 3   
 
  116   1        switch(Channel)
  117   1        {
@@ -190,7 +190,7 @@ line level    source
  175   2            PWM5H = HIBYTE(Set_Duty_Cycle);     
  176   2            PWM5L = LOBYTE(Set_Duty_Cycle);
  177   2        */
-C51 COMPILER V9.60.0.0   PWM                                                               06/13/2021 00:44:03 PAGE 4   
+C51 COMPILER V9.60.0.0   PWM                                                               09/04/2021 20:40:09 PAGE 4   
 
  178   2        }
  179   1        set_PWM0CON0_LOAD;
@@ -254,7 +254,7 @@ line level    source
  237   2            break;
  238   2        /*  default:
  239   2            ALL_PWM_OUTPUT_ENABLE;
-C51 COMPILER V9.60.0.0   PWM                                                               06/13/2021 00:44:03 PAGE 5   
+C51 COMPILER V9.60.0.0   PWM                                                               09/04/2021 20:40:09 PAGE 5   
 
  240   2            PWM0H = HIBYTE(Set_Duty_Cycle);     
  241   2            PWM0L = LOBYTE(Set_Duty_Cycle);
@@ -318,7 +318,7 @@ line level    source
  299   2          case 1 :
  300   2            DISABLE_PWM0_CH0_P12_OUTPUT;
  301   2            clr_P1_2;
-C51 COMPILER V9.60.0.0   PWM                                                               06/13/2021 00:44:03 PAGE 6   
+C51 COMPILER V9.60.0.0   PWM                                                               09/04/2021 20:40:09 PAGE 6   
 
  302   2            break;
  303   2          case 2 :
@@ -382,7 +382,7 @@ line level    source
  361   1      }
  362          
  363          int map(int x, int in_min, int in_max, int out_min, int out_max) 
-C51 COMPILER V9.60.0.0   PWM                                                               06/13/2021 00:44:03 PAGE 7   
+C51 COMPILER V9.60.0.0   PWM                                                               09/04/2021 20:40:09 PAGE 7   
 
  364          {
  365   1        int new_range;

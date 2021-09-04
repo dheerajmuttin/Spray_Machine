@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 1   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52   2              Reverse_Swith_Status = PRESS;
   53   2            }
   54   2            else if(Reverse_Swith == 1 && Reverse_Swith_Status == PRESS)
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 2   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 2   
 
   55   2            {
   56   2              PWM_Disable(2);
@@ -126,7 +126,7 @@ line level    source
  114   3          }
  115   2          
  116   2          if(MT_Forword_Switch == PRESS && Pre_FWD_Status == RELESE && MT_Reverse_Switch == RELESE)
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 3   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 3   
 
  117   2          {
  118   3            Pre_FWD_Status = PRESS;
@@ -190,7 +190,7 @@ line level    source
  176   1        //ENABLE_PIT1_P04_FALLINGEDGE;// enable the pin interrupt 1 on the P04 pin; proxy 2
  177   1        ENABLE_PIT1_P03_FALLINGEDGE;
  178   1        ENABLE_PIT2_P36_FALLINGEDGE;// enable the pin interrupt 2 on the P36 pin; switch 2;
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 4   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 4   
 
  179   1        ENABLE_PIT3_P37_FALLINGEDGE;//enable the pin interrupt 3 on the P37 pin; switch 3;
  180   1        ENABLE_PIN_INTERRUPT; //  pinchange interrupt for button pressed 
@@ -254,7 +254,7 @@ line level    source
  238   1        {
  239   2          MOTOR_SPEED = Current_speed;
  240   2          Update_Display(2,MOTOR_SPEED);
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 5   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 5   
 
  241   2        }
  242   1      }
@@ -318,7 +318,7 @@ line level    source
  300   1                  set_T3CON_TR3;         //Trigger Timer3
  301   1                  clr_IE_ES;
  302   1      }
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 6   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 6   
 
  303          
  304          
@@ -382,7 +382,7 @@ line level    source
  362   4            }
  363   3            {
  364   4              Reverse_Dir;
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 7   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 7   
 
  365   4              //Cart.Direction = REVERSE;
  366   4            }
@@ -446,7 +446,7 @@ line level    source
  424   2          {
  425   3            Sensor_2 = CAPTURED;
  426   3            C0L = 0x00;
-C51 COMPILER V9.60.0.0   MAIN                                                              06/13/2021 00:44:02 PAGE 8   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/04/2021 20:40:08 PAGE 8   
 
  427   3            C0H = 0x00;
  428   3          }
