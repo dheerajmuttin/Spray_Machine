@@ -150,14 +150,14 @@ void Initilisation()
 	clr_P1_3;
 	P03_INPUT_MODE; // proxy 1
 	P04_INPUT_MODE; // proxy 2
-	P30_INPUT_MODE; // emergency stop switch
+	P30_INPUT_MODE; // switch 1 INT0  external intrrupt emergency stop switch
 	P05_INPUT_MODE; //proxy 3
 	P01_INPUT_MODE; //proxy 4
-	P15_INPUT_MODE; //switch 5
-	P25_INPUT_MODE; // swtich 4
-	P36_INPUT_MODE; // swtich 3
-	P37_INPUT_MODE; // swtich 2
-	P32_INPUT_MODE;// swtich 6
+	P15_INPUT_MODE; //switch 5 pin change interrupt
+	P25_INPUT_MODE; // swtich 4 pin change interrupt
+	P36_INPUT_MODE; // swtich 2 pin change interrupt
+	P37_INPUT_MODE; // swtich 3 pin change interrupt
+	P32_INPUT_MODE;// swtich 6 pin change interrupt
 	P13_PUSHPULL_MODE; // buzzer outpute
 	clr_P1_3; // clear the buzzer outpute
 	P11_PUSHPULL_MODE; // trigger 1
@@ -166,15 +166,12 @@ void Initilisation()
 	clr_P0_0; // clear the trigger 2
 	
 	INT0_FALLING_EDGE_TRIG;
-	ENABLE_INT0_INTERRUPT; // emergency stop button on interrupt external
+	ENABLE_INT0_INTERRUPT; // emergency stop button on interrupt external switch 1
 	//ENABLE_TIMER2_INTERRUPT; // timer2 overflow detection for sensor checking
 	//ENABLE_CAPTURE_INTERRUPT; // capture interrupt detection
 	//ENABLE_WKT_INTERRUPT; // wakeup timer interrupt for the time counting
-	//ENABLE_PIT0_P03_FALLINGEDGE; // enable the pin interrupt 0 on the P03 pin; proxy 1
-	ENABLE_PIT0_P33_FALLINGEDGE;
-	
-	//ENABLE_PIT1_P04_FALLINGEDGE;// enable the pin interrupt 1 on the P04 pin; proxy 2
-	ENABLE_PIT1_P03_FALLINGEDGE;
+	ENABLE_PIT0_P03_FALLINGEDGE; // enable the pin interrupt 0 on the P03 pin; proxy 1
+	ENABLE_PIT1_P04_FALLINGEDGE;// enable the pin interrupt 1 on the P04 pin; proxy 2
 	ENABLE_PIT2_P36_FALLINGEDGE;// enable the pin interrupt 2 on the P36 pin; switch 2;
 	ENABLE_PIT3_P37_FALLINGEDGE;//enable the pin interrupt 3 on the P37 pin; switch 3;
 	ENABLE_PIN_INTERRUPT; //  pinchange interrupt for button pressed 
@@ -332,8 +329,6 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 			if(chart_status == CYCLE_ON)
 		{
 		Cart.Start_Sensor = 1;
-			
-			
 		}
 	}
 	
