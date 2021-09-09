@@ -37,11 +37,17 @@ linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?TRIGGER_2?MAIN
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_PWM_ENABLE_INT?PWM
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_MAP_1?PWM
-Program Size: data=14.1 xdata=73 code=5286
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_PWM_ENABLE?PWM
+    CALLER1: ?C_C51STARTUP
+    CALLER2: ?PR?PIN_INT_ISR?MAIN
+Program Size: data=14.1 xdata=76 code=5280
 creating hex file from ".\Objects\shree"...
-".\Objects\shree" - 0 Error(s), 3 Warning(s).
-Build Time Elapsed:  00:00:03
+".\Objects\shree" - 0 Error(s), 5 Warning(s).
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

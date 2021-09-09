@@ -172,17 +172,18 @@ void Initilisation()
 	//ENABLE_WKT_INTERRUPT; // wakeup timer interrupt for the time counting
 	ENABLE_PIT0_P03_FALLINGEDGE; // enable the pin interrupt 0 on the P03 pin; proxy 1
 	ENABLE_PIT1_P04_FALLINGEDGE;// enable the pin interrupt 1 on the P04 pin; proxy 2
-	ENABLE_PIT2_P36_FALLINGEDGE;// enable the pin interrupt 2 on the P36 pin; switch 2;
-	ENABLE_PIT3_P37_FALLINGEDGE;//enable the pin interrupt 3 on the P37 pin; switch 3;
+	ENABLE_PIT2_P36_FALLINGEDGE;// enable the pin interrupt 2 on the P36 pin; switch 2; on pin 9
+	ENABLE_PIT3_P37_FALLINGEDGE;//enable the pin interrupt 3 on the P37 pin; switch 3; on pin 10
 	ENABLE_PIN_INTERRUPT; //  pinchange interrupt for button pressed 
 	
 	// timer 2 initialization divide by 4 timer
-	clr_T2CON_CMRL2;
+	//clr_T2CON_CMRL2;
 	TIMER2_DIV_4; // 24/4=6MHZ frequency
-	clr_T2MOD_LDEN;
+	//clr_T2MOD_LDEN;
 	IC0_P12_CAP0_BOTHEDGE_CAPTURE;//echo 1
 	IC3_P00_CAP1_BOTHEDGE_CAPTURE; // echo 2 both edge capture
-	set_T2MOD_CAPCR;
+	//set_T2MOD_CAPCR;
+	set_EIE_ECAP;
 	ENABLE_GLOBAL_INTERRUPT; // globle interrupt enable pin
 }
 
@@ -195,6 +196,7 @@ void trigger_1()
 	Timer0_Delay(SYS_FREQ,1,100);
   Sensor_1 = TRIGGERED;
 	Sensor_2 = NOP;
+	set_T2CON_TR2;
 	// and set the status byte enum data type 
 	//set reset timer to apropriate ccp module in t2mod last bits
 }
@@ -207,6 +209,7 @@ void trigger_2()
 	clr_P1_0;
 	Sensor_2 = TRIGGERED;
 	Sensor_1 = NOP;
+	set_T2CON_TR2;
 	// and set the status byte enum data type 
 	//set reset timer to apropriate ccp module in t2mod last bits
 }
@@ -227,7 +230,7 @@ void Get_Motor_Speed()
 	clr_ADCCON0_ADCF;
   set_ADCCON0_ADCS;                  // ADC start trig signal
   while(ADCF == 0);
-  ADC_reding =(ADCRH<<4)|(ADCRL&0x0F);
+  ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
 	//Current_speed = (int)map_1(ADC_reding,0,4095,0,100);
 	Current_speed = map(ADC_reding,0,4095,0,100);
 	
@@ -246,7 +249,7 @@ void Get_Pump_Speed()
 	clr_ADCCON0_ADCF;
   set_ADCCON0_ADCS;                  // ADC start trig signal
   while(ADCF == 0);
-  ADC_reding =(ADCRH<<4)|(ADCRL&0x0F);
+  ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
 	//Current_speed1 = (int)map_1(ADC_reding,0,4095,0,100);
 	
 	Current_speed1 = (int)map(ADC_reding,0,4095,0,100);
@@ -359,7 +362,7 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 				Reverse_Dir;
 				//Cart.Direction = REVERSE;
 			}
-			PWM_Enable_int(2,MOTOR_SPEED,PWM0_Periode);
+			PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
 			//Cart.Start = 0x0  CYCLE_ON;
 			chart_status = 0x00;
 			Pump_status = ON; // manual checking status of pump cleared when pump status is on
@@ -440,7 +443,6 @@ void Timer1_ISR(void) interrupt 3        // Vector @  0x1B
     _pop_(SFRS);
     _pop_(SFRS);
 }
-
 
 void WKT_ISR(void) interrupt 17                 // Vector @  0x8B
 {
