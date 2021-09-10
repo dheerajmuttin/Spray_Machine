@@ -28,7 +28,6 @@ float Echo_Time;
 char Pre_FWD_Status = RELESE;
 char Pre_RVS_Status = RELESE;
 
-
 void main()
 {
 	MODIFY_HIRC(HIRC_24);
@@ -37,7 +36,6 @@ void main()
 	PWM1_Periode = Initialise_PWM1(1);
 	UART0_Timer3(115200);
 	Initilisation();
-	
 	while(1)
 	{
 		Get_Motor_Speed();
@@ -70,7 +68,6 @@ void main()
 			}
 		}
 		*/
-		
 		if (chart_status/*Cart.Start*/ == CYCLE_ON)
 		{
 			if(Cart.Direction == FORWORD && Cart.End_Sensor == 1)
@@ -88,11 +85,11 @@ void main()
 				Cart.Direction = FORWORD;
 				Cart.Start_Sensor = 0;
 				Cart.End_Sensor = 0;
-				//Cart.Start = CYCLE_COMP;
+				Cart.Start = CYCLE_COMP;
 				chart_status = CYCLE_COMP;
-				
 			}
 		}
+		
 		
 		if (Sensor_1 == COMPLETE)
 		{
@@ -127,13 +124,13 @@ void main()
 			if(MT_Forword_Switch == RELESE && Pre_RVS_Status == RELESE && MT_Reverse_Switch == PRESS)
 		{
 			Pre_RVS_Status = PRESS;
-			Forword_Dir;
+			Reverse_Dir;
 			PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
 		}
+		
 		if (MT_Forword_Switch == RELESE && Pre_RVS_Status == PRESS && MT_Reverse_Switch == RELESE)
 		{
 			Pre_RVS_Status = RELESE;
-			Reverse_Dir;
 			PWM_Disable(2);
 		}
 		
@@ -143,7 +140,6 @@ void main()
 		}
 	}//while end
 }// main end 
-
 void Initilisation()
 {
 	P13_PUSHPULL_MODE; // dir switch
@@ -186,9 +182,6 @@ void Initilisation()
 	set_EIE_ECAP;
 	ENABLE_GLOBAL_INTERRUPT; // globle interrupt enable pin
 }
-
-
-
 void trigger_1()
 {
 	// 10us high pin trigger 
@@ -200,7 +193,6 @@ void trigger_1()
 	// and set the status byte enum data type 
 	//set reset timer to apropriate ccp module in t2mod last bits
 }
-
 void trigger_2()
 {
 	// 10us high pin trigger 
@@ -220,9 +212,7 @@ void Reset_Travel_Staus(TRAVEL *Cart)
 	Cart->Start_Sensor = 0;
 	Cart->End_Sensor = 0;
 }
-
 void Get_Motor_Speed()
-	
 {
 	unsigned int Current_speed = 0;
 	unsigned int ADC_reding = 0;
@@ -240,7 +230,6 @@ void Get_Motor_Speed()
 		Update_Display(2,MOTOR_SPEED);
 	}
 }
-
 void Get_Pump_Speed()
 {
 	unsigned int Current_speed1 = 0;
@@ -263,8 +252,6 @@ void Get_Pump_Speed()
 		}
 	}
 }
-
-
 void Update_Display(unsigned char channel,unsigned char value)
 {
 	char i;
@@ -288,7 +275,6 @@ void Update_Display(unsigned char channel,unsigned char value)
 	}
 	
 }
-
 void UART0_Timer3(unsigned long u32Baudrate)
 {
 						SCON = 0x50;          //UART0 Mode1,REN=1,TI=1
@@ -300,8 +286,6 @@ void UART0_Timer3(unsigned long u32Baudrate)
             set_T3CON_TR3;         //Trigger Timer3
             clr_IE_ES;
 }
-
-
 void INT0_ISR(void) interrupt 0          // Vector @  0x03
 {
 	DISABLE_GLOBAL_INTERRUPT;
@@ -334,7 +318,6 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 		Cart.Start_Sensor = 1;
 		}
 	}
-	
 	temp = PIF;
 	if(temp&SET_BIT1)
 	{
@@ -346,7 +329,6 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 		}
 			
 	}
-	
 	temp = PIF;
 	if(temp&SET_BIT2)
 	{
@@ -363,13 +345,12 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 				//Cart.Direction = REVERSE;
 			}
 			PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
-			//Cart.Start = 0x0  CYCLE_ON;
+			Cart.Start = CYCLE_ON;
 			chart_status = 0x00;
 			Pump_status = ON; // manual checking status of pump cleared when pump status is on
 			PWM1_Enable_int(1,PUMP_SPEED,PWM1_Periode);
 		}
 	}
-	
 	temp = PIF;
 	if(temp&SET_BIT3)
 	{
@@ -391,8 +372,6 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
     _pop_(SFRS);
 	ENABLE_GLOBAL_INTERRUPT;
 }
-
-
 
 void Capture_ISR(void) interrupt 12      // Vector @  0x63
 {
@@ -432,8 +411,10 @@ void Capture_ISR(void) interrupt 12      // Vector @  0x63
 	}
 		clr_CAPCON0_CAPF0;
     clr_CAPCON0_CAPF1;
+		clr_T2CON_TF2;
     _pop_(SFRS);
 	ENABLE_GLOBAL_INTERRUPT;
+	
 }
 
 void Timer1_ISR(void) interrupt 3        // Vector @  0x1B
@@ -444,9 +425,19 @@ void Timer1_ISR(void) interrupt 3        // Vector @  0x1B
     _pop_(SFRS);
 }
 
+
 void WKT_ISR(void) interrupt 17                 // Vector @  0x8B
 {
     _push_(SFRS);
     clr_WKCON_WKTF;
+    _pop_(SFRS);
+}
+
+void Timer2_ISR(void) interrupt 5        // Vector @  0x2B
+{
+	
+    _push_(SFRS);
+    clr_T2CON_TF2;
+	// reset the all ccp module and though the error for sensor is not connected or check the sensor
     _pop_(SFRS);
 }
