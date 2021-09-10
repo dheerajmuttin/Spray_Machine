@@ -17,8 +17,8 @@
 #define MTR_PWM	1 // channel 0
 #define PUMP_PWM 0 // channel 1
 #define SYS_FREQ 24000000L
-#define Time_Constant 0.000000166
-
+#define Time_Constant 0.16666
+#define _NO_ 0xFF
 
 //sbit Forword_Switch = P2^5;
 //sbit Reverse_Swith = P1^5;

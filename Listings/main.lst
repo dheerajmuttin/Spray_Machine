@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 1   
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
@@ -22,8 +22,8 @@ line level    source
   12          char chart_status = CYCLE_COMP;
   13          unsigned int PWM0_Periode;
   14          unsigned int PWM1_Periode;
-  15          unsigned int MOTOR_SPEED=0;
-  16          unsigned int PUMP_SPEED=0;
+  15          volatile unsigned int MOTOR_SPEED=0;
+  16          volatile unsigned int PUMP_SPEED=0;
   17          unsigned char Pump_status = OFF;
   18          unsigned char Forword_Switch_Status = RELESE;
   19          unsigned char Reverse_Swith_Status = RELESE;
@@ -38,444 +38,454 @@ line level    source
   28          char Pre_FWD_Status = RELESE;
   29          char Pre_RVS_Status = RELESE;
   30          
-  31          
-  32          void main()
-  33          {
-  34   1        MODIFY_HIRC(HIRC_24);
-  35   1        Reset_Travel_Staus(&Cart);
-  36   1        PWM0_Periode = Initialise_PWM(1);
-  37   1        PWM1_Periode = Initialise_PWM1(1);
-  38   1        UART0_Timer3(115200);
-  39   1        Initilisation();
-  40   1        
-  41   1        while(1)
-  42   1        {
-  43   2          Get_Motor_Speed();
-  44   2          Get_Pump_Speed();
-  45   2          
-  46   2      /*    if (Cart.Start != CYCLE_ON)
-  47   2          {
-  48   2            if(Reverse_Swith == 0 && Reverse_Swith_Status == RELESE)
-  49   2            {
-  50   2              Reverse_Dir;
-  51   2              PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
-  52   2              Reverse_Swith_Status = PRESS;
-  53   2            }
-  54   2            else if(Reverse_Swith == 1 && Reverse_Swith_Status == PRESS)
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 2   
+  31          void main()
+  32          {
+  33   1        MODIFY_HIRC(HIRC_24);
+  34   1        Reset_Travel_Staus(&Cart);
+  35   1        PWM0_Periode = Initialise_PWM(1);
+  36   1        PWM1_Periode = Initialise_PWM1(1);
+  37   1        UART0_Timer3(115200);
+  38   1        Initilisation();
+  39   1        while(1)
+  40   1        {
+  41   2          Get_Motor_Speed();
+  42   2          Get_Pump_Speed();
+  43   2          
+  44   2      /*    if (Cart.Start != CYCLE_ON)
+  45   2          {
+  46   2            if(Reverse_Swith == 0 && Reverse_Swith_Status == RELESE)
+  47   2            {
+  48   2              Reverse_Dir;
+  49   2              PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
+  50   2              Reverse_Swith_Status = PRESS;
+  51   2            }
+  52   2            else if(Reverse_Swith == 1 && Reverse_Swith_Status == PRESS)
+  53   2            {
+  54   2              PWM_Disable(2);
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 2   
 
-  55   2            {
-  56   2              PWM_Disable(2);
-  57   2              Reverse_Swith_Status = RELESE;
-  58   2            }
-  59   2            else if(Forword_Switch == 0 && Forword_Switch_Status == RELESE)
-  60   2            {
-  61   2              Forword_Dir;
-  62   2              PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
-  63   2              Forword_Switch_Status = PRESS;
-  64   2            }
-  65   2          
-  66   2            else if(Forword_Switch == 0 && Forword_Switch_Status == PRESS)
-  67   2            {
-  68   2              PWM_Disable(2);
-  69   2              Forword_Switch_Status = RELESE;
-  70   2            }
-  71   2          }
-  72   2          */
-  73   2          
-  74   2          
-  75   2          if (chart_status/*Cart.Start*/ == CYCLE_ON)
-  76   2          {
-  77   3            if(Cart.Direction == FORWORD && Cart.End_Sensor == 1)
-  78   3            {
-  79   4              PWM_Disable(2);
-  80   4              Timer0_Delay(SYS_FREQ,1000,1000);
-  81   4              Cart.Direction = REVERSE;
-  82   4              Reverse_Dir;
-  83   4              PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
-  84   4            }
-  85   3            if(Cart.Direction == REVERSE && Cart.Start_Sensor == 1)
-  86   3            {
-  87   4              PWM_Disable(2);
-  88   4              PWM1_Disable(1);
-  89   4              Cart.Direction = FORWORD;
-  90   4              Cart.Start_Sensor = 0;
-  91   4              Cart.End_Sensor = 0;
-  92   4              Cart.Start = CYCLE_COMP;
-  93   4              chart_status = CYCLE_COMP;
-  94   4            }
-  95   3          }
-  96   2          
-  97   2          
-  98   2          if (Sensor_1 == COMPLETE)
-  99   2          {
- 100   3            // calculate time distance and hight of water using paramters 
- 101   3            Sensor_1 = NOP;
- 102   3          }
- 103   2          
- 104   2            if (Sensor_2 == COMPLETE)
- 105   2          {
- 106   3            // calculate time distance and hight of water using paramters 
- 107   3            SFRS = 0;
- 108   3            Low_Byte = C1L;
- 109   3            High_Byte = C1H;
- 110   3            Word = MAKEWORD(High_Byte,Low_Byte);
- 111   3            Echo_Time = (float)Word * Time_Constant;
- 112   3            Distance = Echo_Time/58;
- 113   3            Sensor_2 = NOP;
- 114   3            Update_Display(1,Water_Level);
- 115   3          }
- 116   2          
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 3   
+  55   2              Reverse_Swith_Status = RELESE;
+  56   2            }
+  57   2            else if(Forword_Switch == 0 && Forword_Switch_Status == RELESE)
+  58   2            {
+  59   2              Forword_Dir;
+  60   2              PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
+  61   2              Forword_Switch_Status = PRESS;
+  62   2            }
+  63   2          
+  64   2            else if(Forword_Switch == 0 && Forword_Switch_Status == PRESS)
+  65   2            {
+  66   2              PWM_Disable(2);
+  67   2              Forword_Switch_Status = RELESE;
+  68   2            }
+  69   2          }
+  70   2          */
+  71   2          if (Cart.Start == CYCLE_ON)
+  72   2          {
+  73   3            if(Cart.Direction == FORWORD && Cart.End_Sensor == 1)
+  74   3            {
+  75   4              PWM_Disable(2);
+  76   4              Timer0_Delay(SYS_FREQ,1000,1000);
+  77   4              Cart.Direction = REVERSE;
+  78   4              Cart.End_Sensor = 0;
+  79   4              Reverse_Dir;
+  80   4              PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
+  81   4            }
+  82   3            if(Cart.Direction == REVERSE && Cart.Start_Sensor == 1)
+  83   3            {
+  84   4              
+  85   4              PWM_Disable(2);
+  86   4              PWM1_Disable(1);
+  87   4              Cart.Direction = FORWORD;
+  88   4              Cart.Start_Sensor = 0;
+  89   4              Cart.Start = CYCLE_COMP;
+  90   4            //chart_status = CYCLE_COMP;
+  91   4            }
+  92   3          }
+  93   2          
+  94   2          if (Sensor_1 == COMPLETE)
+  95   2          {
+  96   3            // calculate time distance and hight of water using paramters 
+  97   3            Sensor_1 = NOP;
+  98   3          }
+  99   2          
+ 100   2            if (Sensor_2 == COMPLETE)
+ 101   2          {
+ 102   3            // calculate time distance and hight of water using paramters 
+ 103   3            SFRS = 0;
+ 104   3            Low_Byte = C1L;
+ 105   3            High_Byte = C1H;
+ 106   3            Word = MAKEWORD(High_Byte,Low_Byte);
+ 107   3            Echo_Time = (float)Word * Time_Constant;
+ 108   3            Distance = (Echo_Time*0.017);
+ 109   3            Sensor_2 = NOP;
+ 110   3            Update_Display(1,Water_Level);
+ 111   3          }
+ 112   2          
+ 113   2          if(MT_Forword_Switch == PRESS && Pre_FWD_Status == RELESE && MT_Reverse_Switch == RELESE)
+ 114   2          {
+ 115   3            Pre_FWD_Status = PRESS;
+ 116   3            Forword_Dir;
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 3   
 
- 117   2          if(MT_Forword_Switch == PRESS && Pre_FWD_Status == RELESE && MT_Reverse_Switch == RELESE)
- 118   2          {
- 119   3            Pre_FWD_Status = PRESS;
- 120   3            Forword_Dir;
- 121   3            PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
- 122   3          }
- 123   2          if (MT_Forword_Switch == RELESE && Pre_FWD_Status == PRESS && MT_Reverse_Switch == RELESE)
- 124   2          {
- 125   3            Pre_FWD_Status = RELESE;
- 126   3            PWM_Disable(2);
- 127   3          }
- 128   2            if(MT_Forword_Switch == RELESE && Pre_RVS_Status == RELESE && MT_Reverse_Switch == PRESS)
- 129   2          {
- 130   3            Pre_RVS_Status = PRESS;
- 131   3            Reverse_Dir;
- 132   3            PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
- 133   3          }
- 134   2          
- 135   2          if (MT_Forword_Switch == RELESE && Pre_RVS_Status == PRESS && MT_Reverse_Switch == RELESE)
- 136   2          {
- 137   3            Pre_RVS_Status = RELESE;
- 138   3            PWM_Disable(2);
- 139   3          }
- 140   2          
- 141   2          if (MT_Forword_Switch == RELESE && MT_Reverse_Switch == RELESE)
- 142   2          {
- 143   3            PWM_Disable(2);
- 144   3          }
- 145   2        }//while end
- 146   1      }// main end 
- 147          
- 148          void Initilisation()
- 149          {
- 150   1        P13_PUSHPULL_MODE; // dir switch
- 151   1        clr_P1_3;
- 152   1        P03_INPUT_MODE; // proxy 1
- 153   1        P04_INPUT_MODE; // proxy 2
- 154   1        P30_INPUT_MODE; // switch 1 INT0  external intrrupt emergency stop switch
- 155   1        P05_INPUT_MODE; //proxy 3
- 156   1        P01_INPUT_MODE; //proxy 4
- 157   1        P15_INPUT_MODE; //switch 5 pin change interrupt
- 158   1        P25_INPUT_MODE; // swtich 4 pin change interrupt
- 159   1        P36_INPUT_MODE; // swtich 2 pin change interrupt
- 160   1        P37_INPUT_MODE; // swtich 3 pin change interrupt
- 161   1        P32_INPUT_MODE;// swtich 6 pin change interrupt
- 162   1        P13_PUSHPULL_MODE; // buzzer outpute
- 163   1        clr_P1_3; // clear the buzzer outpute
- 164   1        P11_PUSHPULL_MODE; // trigger 1
- 165   1        P10_PUSHPULL_MODE; // trigger 2
- 166   1        clr_P1_1; // clear the trigger 1
- 167   1        clr_P0_0; // clear the trigger 2
- 168   1        
- 169   1        INT0_FALLING_EDGE_TRIG;
- 170   1        ENABLE_INT0_INTERRUPT; // emergency stop button on interrupt external switch 1
- 171   1        //ENABLE_TIMER2_INTERRUPT; // timer2 overflow detection for sensor checking
- 172   1        //ENABLE_CAPTURE_INTERRUPT; // capture interrupt detection
- 173   1        //ENABLE_WKT_INTERRUPT; // wakeup timer interrupt for the time counting
- 174   1        ENABLE_PIT0_P03_FALLINGEDGE; // enable the pin interrupt 0 on the P03 pin; proxy 1
- 175   1        ENABLE_PIT1_P04_FALLINGEDGE;// enable the pin interrupt 1 on the P04 pin; proxy 2
- 176   1        ENABLE_PIT2_P36_FALLINGEDGE;// enable the pin interrupt 2 on the P36 pin; switch 2; on pin 9
- 177   1        ENABLE_PIT3_P37_FALLINGEDGE;//enable the pin interrupt 3 on the P37 pin; switch 3; on pin 10
- 178   1        ENABLE_PIN_INTERRUPT; //  pinchange interrupt for button pressed 
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 4   
+ 117   3            PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
+ 118   3          }
+ 119   2          if (MT_Forword_Switch == RELESE && Pre_FWD_Status == PRESS && MT_Reverse_Switch == RELESE)
+ 120   2          {
+ 121   3            Pre_FWD_Status = RELESE;
+ 122   3            PWM_Disable(2);
+ 123   3          }
+ 124   2            if(MT_Forword_Switch == RELESE && Pre_RVS_Status == RELESE && MT_Reverse_Switch == PRESS)
+ 125   2          {
+ 126   3            Pre_RVS_Status = PRESS;
+ 127   3            Reverse_Dir;
+ 128   3            PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
+ 129   3          }
+ 130   2          
+ 131   2          if (MT_Forword_Switch == RELESE && Pre_RVS_Status == PRESS && MT_Reverse_Switch == RELESE)
+ 132   2          {
+ 133   3            Pre_RVS_Status = RELESE;
+ 134   3            PWM_Disable(2);
+ 135   3          }
+ 136   2          
+ 137   2          /*if (MT_Forword_Switch == RELESE && MT_Reverse_Switch == RELESE)
+ 138   2          {
+ 139   2            PWM_Disable(2);
+ 140   2          }*/
+ 141   2          
+ 142   2          if(Sensor_2 == NOP)
+ 143   2          {
+ 144   3            trigger_2();
+ 145   3          }
+ 146   2          
+ 147   2          if(TF2 == 1)// check for timer 2 interrupt flag overflow and rest it
+ 148   2          {
+ 149   3            clr_T2CON_TF2;
+ 150   3            Update_Display(3,_NO_);
+ 151   3            Sensor_2 = TIMER_OVERFLOW;
+ 152   3          }
+ 153   2          
+ 154   2        }//while end
+ 155   1      }// main end 
+ 156          void Initilisation()
+ 157          {
+ 158   1        P13_PUSHPULL_MODE; // dir switch
+ 159   1        clr_P1_3;
+ 160   1        P03_INPUT_MODE; // proxy 1
+ 161   1        P04_INPUT_MODE; // proxy 2
+ 162   1        P30_INPUT_MODE; // switch 1 INT0  external intrrupt emergency stop switch
+ 163   1        P05_INPUT_MODE; //proxy 3
+ 164   1        P01_INPUT_MODE; //proxy 4
+ 165   1        P15_INPUT_MODE; //switch 5 pin change interrupt
+ 166   1        P25_INPUT_MODE; // swtich 4 pin change interrupt
+ 167   1        P36_INPUT_MODE; // swtich 2 pin change interrupt
+ 168   1        P37_INPUT_MODE; // swtich 3 pin change interrupt
+ 169   1        P32_INPUT_MODE;// swtich 6 pin change interrupt
+ 170   1        P13_PUSHPULL_MODE; // buzzer outpute
+ 171   1        clr_P1_3; // clear the buzzer outpute
+ 172   1        P11_PUSHPULL_MODE; // trigger 1
+ 173   1        P00_PUSHPULL_MODE; // trigger 2
+ 174   1        clr_P1_1; // clear the trigger 1
+ 175   1        clr_P0_0; // clear the trigger 2
+ 176   1        
+ 177   1        INT0_FALLING_EDGE_TRIG;
+ 178   1        ENABLE_INT0_INTERRUPT; // emergency stop button on interrupt external switch 1
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 4   
 
- 179   1        
- 180   1        // timer 2 initialization divide by 4 timer
- 181   1        //clr_T2CON_CMRL2;
- 182   1        TIMER2_DIV_4; // 24/4=6MHZ frequency
- 183   1        //clr_T2MOD_LDEN;
- 184   1        IC0_P12_CAP0_BOTHEDGE_CAPTURE;//echo 1
- 185   1        IC3_P00_CAP1_BOTHEDGE_CAPTURE; // echo 2 both edge capture
- 186   1        //set_T2MOD_CAPCR;
- 187   1        set_EIE_ECAP;
- 188   1        ENABLE_GLOBAL_INTERRUPT; // globle interrupt enable pin
- 189   1      }
- 190          
- 191          
- 192          
- 193          void trigger_1()
- 194          {
- 195   1        // 10us high pin trigger 
- 196   1        set_P1_1;
- 197   1        Timer0_Delay(SYS_FREQ,1,100);
- 198   1        Sensor_1 = TRIGGERED;
- 199   1        Sensor_2 = NOP;
- 200   1        set_T2CON_TR2;
- 201   1        // and set the status byte enum data type 
- 202   1        //set reset timer to apropriate ccp module in t2mod last bits
- 203   1      }
- 204          
- 205          void trigger_2()
- 206          {
- 207   1        // 10us high pin trigger 
- 208   1        set_P1_0;
- 209   1        Timer0_Delay(SYS_FREQ,1,100);
- 210   1        clr_P1_0;
- 211   1        Sensor_2 = TRIGGERED;
- 212   1        Sensor_1 = NOP;
- 213   1        set_T2CON_TR2;
- 214   1        // and set the status byte enum data type 
- 215   1        //set reset timer to apropriate ccp module in t2mod last bits
- 216   1      }
- 217          void Reset_Travel_Staus(TRAVEL *Cart)
- 218          {
- 219   1        Cart->Start = CYCLE_COMP;
- 220   1        Cart->Direction = FORWORD;
- 221   1        Cart->Start_Sensor = 0;
- 222   1        Cart->End_Sensor = 0;
- 223   1      }
- 224          
- 225          void Get_Motor_Speed()
- 226            
- 227          {
- 228   1        unsigned int Current_speed = 0;
- 229   1        unsigned int ADC_reding = 0;
- 230   1        ENABLE_ADC_CH12;
- 231   1        clr_ADCCON0_ADCF;
- 232   1        set_ADCCON0_ADCS;                  // ADC start trig signal
- 233   1        while(ADCF == 0);
- 234   1        ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
- 235   1        //Current_speed = (int)map_1(ADC_reding,0,4095,0,100);
- 236   1        Current_speed = map(ADC_reding,0,4095,0,100);
- 237   1        
- 238   1        if (Current_speed != MOTOR_SPEED )
- 239   1        {
- 240   2          MOTOR_SPEED = Current_speed;
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 5   
+ 179   1        //ENABLE_TIMER2_INTERRUPT; // timer2 overflow detection for sensor checking
+ 180   1        //ENABLE_CAPTURE_INTERRUPT; // capture interrupt detection
+ 181   1        //ENABLE_WKT_INTERRUPT; // wakeup timer interrupt for the time counting
+ 182   1        ENABLE_PIT0_P03_FALLINGEDGE; // enable the pin interrupt 0 on the P03 pin; proxy 1
+ 183   1        ENABLE_PIT1_P04_FALLINGEDGE;// enable the pin interrupt 1 on the P04 pin; proxy 2
+ 184   1        ENABLE_PIT2_P36_FALLINGEDGE;// enable the pin interrupt 2 on the P36 pin; switch 2; on pin 9
+ 185   1        ENABLE_PIT3_P37_FALLINGEDGE;//enable the pin interrupt 3 on the P37 pin; switch 3; on pin 10
+ 186   1        ENABLE_PIN_INTERRUPT; //  pinchange interrupt for button pressed 
+ 187   1        
+ 188   1        // timer 2 initialization divide by 4 timer
+ 189   1        //clr_T2CON_CMRL2;
+ 190   1        TIMER2_DIV_4; // 24/4=6MHZ frequency
+ 191   1        //clr_T2MOD_LDEN;
+ 192   1        IC0_P12_CAP0_BOTHEDGE_CAPTURE;//echo 1
+ 193   1        IC2_P10_CAP1_BOTHEDGE_CAPTURE;// echo 2 both edge capture
+ 194   1        //set_T2MOD_CAPCR;
+ 195   1        set_EIE_ECAP;
+ 196   1        ENABLE_GLOBAL_INTERRUPT; // globle interrupt enable pin
+ 197   1      }
+ 198          void trigger_1()
+ 199          {
+ 200   1        // 10us high pin trigger 
+ 201   1        set_P1_1;
+ 202   1        Timer0_Delay(SYS_FREQ,1,100);
+ 203   1        Sensor_1 = TRIGGERED;
+ 204   1        Sensor_2 = NOP;
+ 205   1        set_T2CON_TR2;
+ 206   1        // and set the status byte enum data type 
+ 207   1        //set reset timer to apropriate ccp module in t2mod last bits
+ 208   1      }
+ 209          void trigger_2()
+ 210          {
+ 211   1        // 10us high pin trigger 
+ 212   1        set_P0_0;
+ 213   1        Timer0_Delay(SYS_FREQ,1,100);
+ 214   1        clr_P0_0;
+ 215   1        Sensor_2 = TRIGGERED;
+ 216   1        Sensor_1 = NOP;
+ 217   1        set_T2CON_TR2;
+ 218   1        // and set the status byte enum data type 
+ 219   1        //set reset timer to apropriate ccp module in t2mod last bits
+ 220   1      }
+ 221          void Reset_Travel_Staus(TRAVEL *Cart)
+ 222          {
+ 223   1        Cart->Start = CYCLE_COMP;
+ 224   1        Cart->Direction = FORWORD;
+ 225   1        Cart->Start_Sensor = 0;
+ 226   1        Cart->End_Sensor = 0;
+ 227   1      }
+ 228          void Get_Motor_Speed()
+ 229          {
+ 230   1        unsigned int Current_speed = 0;
+ 231   1        unsigned int ADC_reding = 0;
+ 232   1        ENABLE_ADC_CH12;
+ 233   1        clr_ADCCON0_ADCF;
+ 234   1        set_ADCCON0_ADCS;                  // ADC start trig signal
+ 235   1        while(ADCF == 0);
+ 236   1        ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
+ 237   1        //Current_speed = (int)map_1(ADC_reding,0,4095,0,100);
+ 238   1        Current_speed = (unsigned int)map(ADC_reding,0,4095,0,100);
+ 239   1        
+ 240   1        if (Current_speed != MOTOR_SPEED )
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 5   
 
- 241   2          Update_Display(2,MOTOR_SPEED);
- 242   2        }
- 243   1      }
- 244          
- 245          void Get_Pump_Speed()
- 246          {
- 247   1        unsigned int Current_speed1 = 0;
- 248   1        unsigned int ADC_reding = 0;
- 249   1        ENABLE_ADC_CH9;
- 250   1        clr_ADCCON0_ADCF;
- 251   1        set_ADCCON0_ADCS;                  // ADC start trig signal
- 252   1        while(ADCF == 0);
- 253   1        ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
- 254   1        //Current_speed1 = (int)map_1(ADC_reding,0,4095,0,100);
- 255   1        
- 256   1        Current_speed1 = (int)map(ADC_reding,0,4095,0,100);
- 257   1        if (Current_speed1 != PUMP_SPEED)
- 258   1        {
- 259   2          MOTOR_SPEED = Current_speed1;
- 260   2          if (Pump_status == ON)
- 261   2          {
- 262   3            PWM1_Enable(1,PUMP_SPEED,PWM1_Periode);
- 263   3            Update_Display(3,PUMP_SPEED);
- 264   3          }
- 265   2        }
- 266   1      }
- 267          
- 268          
- 269          void Update_Display(unsigned char channel,unsigned char value)
- 270          {
- 271   1        char i;
- 272   1        switch (channel)
- 273   1        {
- 274   2          case 1:
- 275   2          display_vlaue[0] = value;
- 276   2          break;
- 277   2          case 2:
- 278   2          display_vlaue[1] = value;
- 279   2          break;
- 280   2          case 3:
- 281   2          display_vlaue[2] = value;
- 282   2        }
- 283   1        
- 284   1        for(i=0;i<3;i++) //  sending to uart remote diplay for showing the status
- 285   1        {
- 286   2                TI=0;
- 287   2                SBUF = display_vlaue[i];
- 288   2                while(!TI);
- 289   2        }
- 290   1        
- 291   1      }
- 292          
- 293          void UART0_Timer3(unsigned long u32Baudrate)
- 294          {
- 295   1                  SCON = 0x50;          //UART0 Mode1,REN=1,TI=1
- 296   1                  set_PCON_SMOD;        //UART0 Double Rate Enable
- 297   1                  T3CON &= 0xF8;        //T3PS2=0,T3PS1=0,T3PS0=0(Prescale=1)
- 298   1                  set_T3CON_BRCK;        //UART0 baud rate clock source = Timer3
- 299   1                  RH3   = HIBYTE(65536 - (SYS_FREQ / 16 / u32Baudrate));
- 300   1                  RL3   = LOBYTE(65536 - (SYS_FREQ / 16 / u32Baudrate));
- 301   1                  set_T3CON_TR3;         //Trigger Timer3
- 302   1                  clr_IE_ES;
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 6   
+ 241   1        {
+ 242   2          MOTOR_SPEED = Current_speed;
+ 243   2          Update_Display(2,MOTOR_SPEED);
+ 244   2        }
+ 245   1      }
+ 246          void Get_Pump_Speed()
+ 247          {
+ 248   1        unsigned int Current_speed1 = 0;
+ 249   1        unsigned int ADC_reding = 0;
+ 250   1        ENABLE_ADC_CH9;
+ 251   1        clr_ADCCON0_ADCF;
+ 252   1        set_ADCCON0_ADCS;                  // ADC start trig signal
+ 253   1        while(ADCF == 0);
+ 254   1        ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
+ 255   1        //Current_speed1 = (int)map_1(ADC_reding,0,4095,0,100);
+ 256   1        
+ 257   1        Current_speed1 = (unsigned int)map(ADC_reding,0,4095,0,100);
+ 258   1        if (Current_speed1 != PUMP_SPEED)
+ 259   1        {
+ 260   2          PUMP_SPEED = Current_speed1;
+ 261   2          if (Pump_status == ON)
+ 262   2          {
+ 263   3            PWM1_Enable(1,PUMP_SPEED,PWM1_Periode);
+ 264   3            Update_Display(3,PUMP_SPEED);
+ 265   3          }
+ 266   2        }
+ 267   1      }
+ 268          void Update_Display(unsigned char channel,unsigned char value)
+ 269          {
+ 270   1        char i;
+ 271   1        switch (channel)
+ 272   1        {
+ 273   2          case 1:
+ 274   2          display_vlaue[0] = value;
+ 275   2          break;
+ 276   2          case 2:
+ 277   2          display_vlaue[1] = value;
+ 278   2          break;
+ 279   2          case 3:
+ 280   2          display_vlaue[2] = value;
+ 281   2        }
+ 282   1        
+ 283   1        for(i=0;i<3;i++) //  sending to uart remote diplay for showing the status
+ 284   1        {
+ 285   2          TI=0;
+ 286   2          SBUF = display_vlaue[i];
+ 287   2          while(!TI);
+ 288   2        }
+ 289   1        
+ 290   1      }
+ 291          void UART0_Timer3(unsigned long u32Baudrate)
+ 292          {
+ 293   1                  SCON = 0x50;          //UART0 Mode1,REN=1,TI=1
+ 294   1                  set_PCON_SMOD;        //UART0 Double Rate Enable
+ 295   1                  T3CON &= 0xF8;        //T3PS2=0,T3PS1=0,T3PS0=0(Prescale=1)
+ 296   1                  set_T3CON_BRCK;        //UART0 baud rate clock source = Timer3
+ 297   1                  RH3   = HIBYTE(65536 - (SYS_FREQ / 16 / u32Baudrate));
+ 298   1                  RL3   = LOBYTE(65536 - (SYS_FREQ / 16 / u32Baudrate));
+ 299   1                  set_T3CON_TR3;         //Trigger Timer3
+ 300   1                  clr_IE_ES;
+ 301   1      }
+ 302          void INT0_ISR(void) interrupt 0          // Vector @  0x03
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 6   
 
- 303   1      }
- 304          
- 305          
- 306          void INT0_ISR(void) interrupt 0          // Vector @  0x03
- 307          {
- 308   1        DISABLE_GLOBAL_INTERRUPT;
- 309   1          _push_(SFRS);
- 310   1        //emergency stop button function written
- 311   1          PWM_Disable_int(2);
- 312   1          PWM1_Disable_int(1);
- 313   1          //Cart.Start = CYCLE_STOP;
- 314   1            chart_status = CYCLE_STOP;
- 315   1        
- 316   1        // set all the satus regarding direction 
- 317   1        // and emergency stop is detected then start cycle from previous memory status
- 318   1          clr_TCON_IE0;
- 319   1          _pop_(SFRS);
- 320   1        ENABLE_GLOBAL_INTERRUPT;
- 321   1      }
- 322          
- 323          void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
- 324          {
- 325   1        unsigned char temp;
- 326   1        DISABLE_GLOBAL_INTERRUPT;
- 327   1        _push_(SFRS);
- 328   1        temp = PIF;
- 329   1        if(temp&SET_BIT0)
- 330   1        {
- 331   2          // proxy 1 Sensor Detection
- 332   2          //if(Cart.Start == CYCLE_ON)
- 333   2            if(chart_status == CYCLE_ON)
- 334   2          {
- 335   3          Cart.Start_Sensor = 1;
- 336   3          }
- 337   2        }
- 338   1        temp = PIF;
- 339   1        if(temp&SET_BIT1)
- 340   1        {
- 341   2          //if(Cart.Start == CYCLE_ON)
- 342   2            if(chart_status == CYCLE_ON)
- 343   2          {
- 344   3           // proxy 2 Sensor Detection
- 345   3          Cart.End_Sensor = 1;
- 346   3          }
- 347   2            
- 348   2        }
- 349   1        temp = PIF;
- 350   1        if(temp&SET_BIT2)
- 351   1        {
- 352   2          // switch 2 action defination start button cycle
- 353   2          if(Cart.Start != CYCLE_ON)
- 354   2          {
- 355   3            if(Cart.Direction == FORWORD)
+ 303          {
+ 304   1        DISABLE_GLOBAL_INTERRUPT;
+ 305   1          _push_(SFRS);
+ 306   1        //emergency stop button function written
+ 307   1          PWM_Disable_int(2);
+ 308   1          PWM1_Disable_int(1);
+ 309   1          //Cart.Start = CYCLE_STOP;
+ 310   1            chart_status = CYCLE_STOP;
+ 311   1        
+ 312   1        // set all the satus regarding direction 
+ 313   1        // and emergency stop is detected then start cycle from previous memory status
+ 314   1          clr_TCON_IE0;
+ 315   1          _pop_(SFRS);
+ 316   1        ENABLE_GLOBAL_INTERRUPT;
+ 317   1      }
+ 318          
+ 319          void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
+ 320          {
+ 321   1        unsigned char temp;
+ 322   1        DISABLE_GLOBAL_INTERRUPT;
+ 323   1        _push_(SFRS);
+ 324   1        temp = PIF;
+ 325   1        if(temp&SET_BIT0)
+ 326   1        {
+ 327   2          // proxy 1 Sensor Detection start point detect sensor
+ 328   2          if(Cart.Start == CYCLE_ON && Cart.Direction == REVERSE)
+ 329   2          //if(chart_status == CYCLE_ON)
+ 330   2          {
+ 331   3          Cart.Start_Sensor = 1;
+ 332   3          }
+ 333   2        }
+ 334   1        temp = PIF;
+ 335   1        if(temp&SET_BIT1)
+ 336   1        {
+ 337   2          if(Cart.Start == CYCLE_ON && Cart.Direction == FORWORD)
+ 338   2          //if(chart_status == CYCLE_ON)
+ 339   2          {
+ 340   3           // proxy 2 Sensor Detection
+ 341   3          Cart.End_Sensor = 1;
+ 342   3          } 
+ 343   2        }
+ 344   1        temp = PIF;
+ 345   1        if(temp&SET_BIT2)
+ 346   1        {
+ 347   2          // switch 2 action defination start button cycle
+ 348   2          if(Cart.Start != CYCLE_ON)
+ 349   2          {
+ 350   3            if(Cart.Direction == FORWORD)
+ 351   3            {
+ 352   4              Forword_Dir;
+ 353   4              //Cart.Direction = FORWORD;
+ 354   4            }
+ 355   3            else
  356   3            {
- 357   4              Forword_Dir;
- 358   4              //Cart.Direction = FORWORD;
+ 357   4              Reverse_Dir;
+ 358   4              //Cart.Direction = REVERSE;
  359   4            }
- 360   3            {
- 361   4              Reverse_Dir;
- 362   4              //Cart.Direction = REVERSE;
- 363   4            }
- 364   3            PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 7   
+ 360   3            PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
+ 361   3            Cart.Start = CYCLE_ON;
+ 362   3            //chart_status = 0x00;
+ 363   3            Pump_status = ON; // manual checking status of pump cleared when pump status is on
+ 364   3            PWM1_Enable_int(1,PUMP_SPEED,PWM1_Periode);
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 7   
 
- 365   3            Cart.Start = CYCLE_ON;
- 366   3            chart_status = 0x00;
- 367   3            Pump_status = ON; // manual checking status of pump cleared when pump status is on
- 368   3            PWM1_Enable_int(1,PUMP_SPEED,PWM1_Periode);
- 369   3          }
- 370   2        }
- 371   1        temp = PIF;
- 372   1        if(temp&SET_BIT3)
- 373   1        {
- 374   2          if(Pump_status != ON)
- 375   2          {
- 376   3            PWM1_Enable_int(1,PUMP_SPEED,PWM1_Periode);
- 377   3            Pump_status = ON;
- 378   3          }
- 379   2          
- 380   2          else
- 381   2          {
- 382   3            PWM1_Disable_int(1);
- 383   3            Pump_status = OFF;
- 384   3          }
- 385   2          
- 386   2          // switch 3 action defination   pump start stop manully 
- 387   2        }
- 388   1           PIF = 0x00;
- 389   1          _pop_(SFRS);
- 390   1        ENABLE_GLOBAL_INTERRUPT;
- 391   1      }
- 392          
- 393          void Capture_ISR(void) interrupt 12      // Vector @  0x63
- 394          {
- 395   1        unsigned char temp;
- 396   1        DISABLE_GLOBAL_INTERRUPT;
- 397   1          _push_(SFRS);
- 398   1            SFRS=0;
- 399   1        temp = CAPCON0;
- 400   1        if(temp&SET_BIT0)
- 401   1        {
- 402   2          if(Sensor_1 == TRIGGERED)
- 403   2          {
- 404   3            Sensor_1 = CAPTURED;
- 405   3            C0L = 0x00;
- 406   3            C0H = 0x00;
- 407   3          }
- 408   2          if(Sensor_1 == CAPTURED)
- 409   2          {
- 410   3            Sensor_1 = COMPLETE;
- 411   3            clr_T2CON_TR2; // stope the timer2 from counting
- 412   3          }
- 413   2        }
- 414   1        temp = CAPCON0;
- 415   1        if(temp&SET_BIT1)
- 416   1        {
- 417   2          if(Sensor_2 == TRIGGERED)
- 418   2          {
- 419   3            Sensor_2 = CAPTURED;
- 420   3            C0L = 0x00;
- 421   3            C0H = 0x00;
- 422   3          }
- 423   2          if(Sensor_2 == CAPTURED)
- 424   2          {
- 425   3            Sensor_2 = COMPLETE;
- 426   3            clr_T2CON_TR2; // stope the timer2 from counting
-C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 14:30:26 PAGE 8   
+ 365   3          }
+ 366   2        }
+ 367   1      
+ 368   1        temp = PIF;
+ 369   1        if(temp&SET_BIT3)
+ 370   1        {
+ 371   2          if(Pump_status != ON)
+ 372   2          {
+ 373   3            PWM1_Enable_int(1,PUMP_SPEED,PWM1_Periode);
+ 374   3            Pump_status = ON;
+ 375   3          }
+ 376   2          
+ 377   2          else
+ 378   2          {
+ 379   3            PWM1_Disable_int(1);
+ 380   3            Pump_status = OFF;
+ 381   3          }
+ 382   2          
+ 383   2          // switch 3 action defination   pump start stop manully 
+ 384   2        }
+ 385   1           PIF = 0x00;
+ 386   1          _pop_(SFRS);
+ 387   1        ENABLE_GLOBAL_INTERRUPT;
+ 388   1      }
+ 389          
+ 390          void Capture_ISR(void) interrupt 12      // Vector @  0x63
+ 391          {
+ 392   1        unsigned char temp;
+ 393   1        DISABLE_GLOBAL_INTERRUPT;
+ 394   1          _push_(SFRS);
+ 395   1            SFRS=0;
+ 396   1        temp = CAPCON0;
+ 397   1        if(temp&SET_BIT0)
+ 398   1        {
+ 399   2          if(Sensor_1 == TRIGGERED)
+ 400   2          {
+ 401   3            Sensor_1 = CAPTURED;
+ 402   3            C0L = 0x00;
+ 403   3            C0H = 0x00;
+ 404   3          }
+ 405   2          if(Sensor_1 == CAPTURED)
+ 406   2          {
+ 407   3            Sensor_1 = COMPLETE;
+ 408   3            clr_T2CON_TR2; // stope the timer2 from counting
+ 409   3          }
+ 410   2        }
+ 411   1        temp = CAPCON0;
+ 412   1        if(temp&SET_BIT1)
+ 413   1        {
+ 414   2          if(Sensor_2 == TRIGGERED)
+ 415   2          {
+ 416   3            Sensor_2 = CAPTURED;
+ 417   3            C0L = 0x00;
+ 418   3            C0H = 0x00;
+ 419   3          }
+ 420   2          if(Sensor_2 == CAPTURED)
+ 421   2          {
+ 422   3            Sensor_2 = COMPLETE;
+ 423   3            clr_T2CON_TR2; // stope the timer2 from counting
+ 424   3          }
+ 425   2        }
+ 426   1        
+C51 COMPILER V9.60.0.0   MAIN                                                              09/10/2021 23:38:49 PAGE 8   
 
- 427   3          }
- 428   2        }
- 429   1          clr_CAPCON0_CAPF0;
- 430   1          clr_CAPCON0_CAPF1;
- 431   1          clr_T2CON_TF2;
- 432   1          _pop_(SFRS);
- 433   1        ENABLE_GLOBAL_INTERRUPT;
- 434   1        
- 435   1      }
- 436          
- 437          void Timer1_ISR(void) interrupt 3        // Vector @  0x1B
- 438          {
- 439   1          _push_(SFRS);
- 440   1         clr_TCON_TF1;
- 441   1          _pop_(SFRS);
- 442   1          _pop_(SFRS);
- 443   1      }
- 444          
- 445          void WKT_ISR(void) interrupt 17                 // Vector @  0x8B
- 446          {
- 447   1          _push_(SFRS);
- 448   1          clr_WKCON_WKTF;
- 449   1          _pop_(SFRS);
- 450   1      }
+ 427   1        if (Sensor_2 == TIMER_OVERFLOW)
+ 428   1        {
+ 429   2          Sensor_2 = NOP;
+ 430   2        }
+ 431   1          clr_CAPCON0_CAPF0;
+ 432   1          clr_CAPCON0_CAPF1;
+ 433   1          clr_T2CON_TF2;
+ 434   1          _pop_(SFRS);
+ 435   1        ENABLE_GLOBAL_INTERRUPT;
+ 436   1        
+ 437   1      }
+ 438          
+ 439          void Timer1_ISR(void) interrupt 3        // Vector @  0x1B
+ 440          {
+ 441   1          _push_(SFRS);
+ 442   1         clr_TCON_TF1;
+ 443   1          _pop_(SFRS);
+ 444   1          _pop_(SFRS);
+ 445   1      }
+ 446          
+ 447          void WKT_ISR(void) interrupt 17                 // Vector @  0x8B
+ 448          {
+ 449   1          _push_(SFRS);
+ 450   1          clr_WKCON_WKTF;
+ 451   1          _pop_(SFRS);
+ 452   1      }
+ 453          
+ 454          void Timer2_ISR(void) interrupt 5        // Vector @  0x2B
+ 455          {
+ 456   1          _push_(SFRS);
+ 457   1          clr_T2CON_TF2;
+ 458   1        // reset the all ccp module and though the error for sensor is not connected or check the sensor
+ 459   1          _pop_(SFRS);
+ 460   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1783    ----
+   CODE SIZE        =   1815    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     35       5
    PDATA SIZE       =   ----    ----

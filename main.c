@@ -12,8 +12,8 @@ TRAVEL Cart;
 char chart_status = CYCLE_COMP;
 unsigned int PWM0_Periode;
 unsigned int PWM1_Periode;
-unsigned int MOTOR_SPEED=0;
-unsigned int PUMP_SPEED=0;
+volatile unsigned int MOTOR_SPEED=0;
+volatile unsigned int PUMP_SPEED=0;
 unsigned char Pump_status = OFF;
 unsigned char Forword_Switch_Status = RELESE;
 unsigned char Reverse_Swith_Status = RELESE;
@@ -68,28 +68,28 @@ void main()
 			}
 		}
 		*/
-		if (chart_status/*Cart.Start*/ == CYCLE_ON)
+		if (Cart.Start == CYCLE_ON)
 		{
 			if(Cart.Direction == FORWORD && Cart.End_Sensor == 1)
 			{
 				PWM_Disable(2);
 				Timer0_Delay(SYS_FREQ,1000,1000);
 				Cart.Direction = REVERSE;
+				Cart.End_Sensor = 0;
 				Reverse_Dir;
 				PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
 			}
 			if(Cart.Direction == REVERSE && Cart.Start_Sensor == 1)
 			{
+				
 				PWM_Disable(2);
 				PWM1_Disable(1);
 				Cart.Direction = FORWORD;
 				Cart.Start_Sensor = 0;
-				Cart.End_Sensor = 0;
 				Cart.Start = CYCLE_COMP;
-				chart_status = CYCLE_COMP;
+			//chart_status = CYCLE_COMP;
 			}
 		}
-		
 		
 		if (Sensor_1 == COMPLETE)
 		{
@@ -105,7 +105,7 @@ void main()
 			High_Byte = C1H;
 			Word = MAKEWORD(High_Byte,Low_Byte);
 			Echo_Time = (float)Word * Time_Constant;
-			Distance = Echo_Time/58;
+			Distance = (Echo_Time*0.017);
 			Sensor_2 = NOP;
 			Update_Display(1,Water_Level);
 		}
@@ -134,10 +134,23 @@ void main()
 			PWM_Disable(2);
 		}
 		
-		if (MT_Forword_Switch == RELESE && MT_Reverse_Switch == RELESE)
+		/*if (MT_Forword_Switch == RELESE && MT_Reverse_Switch == RELESE)
 		{
 			PWM_Disable(2);
+		}*/
+		
+		if(Sensor_2 == NOP)
+		{
+			trigger_2();
 		}
+		
+		if(TF2 == 1)// check for timer 2 interrupt flag overflow and rest it
+		{
+			clr_T2CON_TF2;
+			Update_Display(3,_NO_);
+			Sensor_2 = TIMER_OVERFLOW;
+		}
+		
 	}//while end
 }// main end 
 void Initilisation()
@@ -157,7 +170,7 @@ void Initilisation()
 	P13_PUSHPULL_MODE; // buzzer outpute
 	clr_P1_3; // clear the buzzer outpute
 	P11_PUSHPULL_MODE; // trigger 1
-	P10_PUSHPULL_MODE; // trigger 2
+	P00_PUSHPULL_MODE; // trigger 2
 	clr_P1_1; // clear the trigger 1
 	clr_P0_0; // clear the trigger 2
 	
@@ -177,7 +190,7 @@ void Initilisation()
 	TIMER2_DIV_4; // 24/4=6MHZ frequency
 	//clr_T2MOD_LDEN;
 	IC0_P12_CAP0_BOTHEDGE_CAPTURE;//echo 1
-	IC3_P00_CAP1_BOTHEDGE_CAPTURE; // echo 2 both edge capture
+	IC2_P10_CAP1_BOTHEDGE_CAPTURE;// echo 2 both edge capture
 	//set_T2MOD_CAPCR;
 	set_EIE_ECAP;
 	ENABLE_GLOBAL_INTERRUPT; // globle interrupt enable pin
@@ -196,9 +209,9 @@ void trigger_1()
 void trigger_2()
 {
 	// 10us high pin trigger 
-	set_P1_0;
+	set_P0_0;
 	Timer0_Delay(SYS_FREQ,1,100);
-	clr_P1_0;
+	clr_P0_0;
 	Sensor_2 = TRIGGERED;
 	Sensor_1 = NOP;
 	set_T2CON_TR2;
@@ -222,7 +235,7 @@ void Get_Motor_Speed()
   while(ADCF == 0);
   ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
 	//Current_speed = (int)map_1(ADC_reding,0,4095,0,100);
-	Current_speed = map(ADC_reding,0,4095,0,100);
+	Current_speed = (unsigned int)map(ADC_reding,0,4095,0,100);
 	
 	if (Current_speed != MOTOR_SPEED )
 	{
@@ -241,10 +254,10 @@ void Get_Pump_Speed()
   ADC_reding =(ADCRH<<4)+(ADCRL&0x0F);
 	//Current_speed1 = (int)map_1(ADC_reding,0,4095,0,100);
 	
-	Current_speed1 = (int)map(ADC_reding,0,4095,0,100);
+	Current_speed1 = (unsigned int)map(ADC_reding,0,4095,0,100);
 	if (Current_speed1 != PUMP_SPEED)
 	{
-		MOTOR_SPEED = Current_speed1;
+		PUMP_SPEED = Current_speed1;
 		if (Pump_status == ON)
 		{
 			PWM1_Enable(1,PUMP_SPEED,PWM1_Periode);
@@ -269,9 +282,9 @@ void Update_Display(unsigned char channel,unsigned char value)
 	
 	for(i=0;i<3;i++) //  sending to uart remote diplay for showing the status
 	{
-					TI=0;
-          SBUF = display_vlaue[i];
-          while(!TI);
+		TI=0;
+    SBUF = display_vlaue[i];
+    while(!TI);
 	}
 	
 }
@@ -311,9 +324,9 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 	temp = PIF;
 	if(temp&SET_BIT0)
 	{
-		// proxy 1 Sensor Detection
-		//if(Cart.Start == CYCLE_ON)
-			if(chart_status == CYCLE_ON)
+		// proxy 1 Sensor Detection start point detect sensor
+		if(Cart.Start == CYCLE_ON && Cart.Direction == REVERSE)
+		//if(chart_status == CYCLE_ON)
 		{
 		Cart.Start_Sensor = 1;
 		}
@@ -321,13 +334,12 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 	temp = PIF;
 	if(temp&SET_BIT1)
 	{
-		//if(Cart.Start == CYCLE_ON)
-			if(chart_status == CYCLE_ON)
+		if(Cart.Start == CYCLE_ON && Cart.Direction == FORWORD)
+		//if(chart_status == CYCLE_ON)
 		{
 		 // proxy 2 Sensor Detection
 		Cart.End_Sensor = 1;
-		}
-			
+		}	
 	}
 	temp = PIF;
 	if(temp&SET_BIT2)
@@ -340,17 +352,19 @@ void Pin_INT_ISR(void) interrupt 7       // Vector @  0x3B
 				Forword_Dir;
 				//Cart.Direction = FORWORD;
 			}
+			else
 			{
 				Reverse_Dir;
 				//Cart.Direction = REVERSE;
 			}
 			PWM_Enable(2,MOTOR_SPEED,PWM0_Periode);
 			Cart.Start = CYCLE_ON;
-			chart_status = 0x00;
+			//chart_status = 0x00;
 			Pump_status = ON; // manual checking status of pump cleared when pump status is on
 			PWM1_Enable_int(1,PUMP_SPEED,PWM1_Periode);
 		}
 	}
+
 	temp = PIF;
 	if(temp&SET_BIT3)
 	{
@@ -409,6 +423,11 @@ void Capture_ISR(void) interrupt 12      // Vector @  0x63
 			clr_T2CON_TR2; // stope the timer2 from counting
 		}
 	}
+	
+	if (Sensor_2 == TIMER_OVERFLOW)
+	{
+		Sensor_2 = NOP;
+	}
 		clr_CAPCON0_CAPF0;
     clr_CAPCON0_CAPF1;
 		clr_T2CON_TF2;
@@ -425,7 +444,6 @@ void Timer1_ISR(void) interrupt 3        // Vector @  0x1B
     _pop_(SFRS);
 }
 
-
 void WKT_ISR(void) interrupt 17                 // Vector @  0x8B
 {
     _push_(SFRS);
@@ -435,7 +453,6 @@ void WKT_ISR(void) interrupt 17                 // Vector @  0x8B
 
 void Timer2_ISR(void) interrupt 5        // Vector @  0x2B
 {
-	
     _push_(SFRS);
     clr_T2CON_TF2;
 	// reset the all ccp module and though the error for sensor is not connected or check the sensor

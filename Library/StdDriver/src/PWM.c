@@ -125,7 +125,7 @@ void PWM_Enable(char Channel ,char Duty_Cycle,unsigned int Periode_Reg_Value)
 			break;
 		case 2 :
 			P14_PUSHPULL_MODE;
-		  clr_P1_1;
+		  clr_P1_4;
 			ENABLE_PWM0_CH1_P14_OUTPUT;
 			//ENABLE_PWM0_CH1_P11_OUTPUT;
 			SFRS = 0;
@@ -266,8 +266,8 @@ void PWM_Disable(char channel)
 			clr_P1_2;
 			break;
 		case 2 :
-			DISABLE_PWM0_CH1_P11_OUTPUT;
-			clr_P1_1;
+			DISABLE_PWM0_CH1_P14_OUTPUT;
+			clr_P1_4;
 			break;
 		case 3 :
 			DISABLE_PWM0_CH2_P10_OUTPUT;
